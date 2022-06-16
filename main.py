@@ -1,6 +1,7 @@
 import pygame
 from colors import *
 from controlpoint import ControlPoint
+from bspline import BSpline
 
 size = (1280, 720)
 
@@ -10,7 +11,8 @@ print(screen.get_size())
 clock = pygame.time.Clock()
 fps = 60
 font = pygame.font.Font('freesansbold.ttf', 26)
-control_points: list[ControlPoint] = []
+bspline = BSpline(order=2)
+curve1_cps: list[ControlPoint] = []
 index = 0
 moving_index = -1
 
@@ -29,27 +31,34 @@ while run:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 run = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                bspline.order += 1
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                if bspline.order > 2:
+                    bspline.order -= 1
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             m_left, m_middle, m_right = pygame.mouse.get_pressed()
             if m_left:
                 x, y = pygame.mouse.get_pos()
                 found = False
-                for cp in control_points:
+                for cp in bspline.control_points:
                     if cp.is_bellow(x, y):
                         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                        moving_index = control_points.index(cp)
+                        moving_index = bspline.control_points.index(cp)
                         found = True
                 if not found:
-                    control_points.append(ControlPoint(
+                    bspline.add_control_point(ControlPoint(
                         x, y, index))
                     index += 1
             elif m_right:
                 x, y = pygame.mouse.get_pos()
-                for cp in control_points:
+                for cp in bspline.control_points:
                     if cp.is_bellow(x, y):
                         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                        control_points.remove(cp)
+                        bspline.remove_control_point(cp)
 
         elif event.type == pygame.MOUSEBUTTONUP:
             moving_index = -1
@@ -57,22 +66,22 @@ while run:
 
         if moving_index != -1:
             x, y = pygame.mouse.get_pos()
-            control_points[moving_index].set_pos(x, y)
+            bspline.control_points[moving_index].set_pos(x, y)
 
-    # draws lines connecting control points
-    for i in range(len(control_points) - 1):
-        pygame.draw.line(
-            screen, black, control_points[i].get_pos(), control_points[i+1].get_pos(), width=2)
-    # draws control points
-    for p in control_points:
-        p.draw(screen, red)
+    bspline.draw_connecting_lines(screen)
+    bspline.draw_control_points(screen)
+
     # draws text for less than 4 cp
-    if len(control_points) < 4:
+    if len(bspline.control_points) < 4:
         text = font.render(
-            f'You need at least 4 control points, {4 - len(control_points)} to go.', True, black)
+            f'Pick at least {4 - len(bspline.control_points)} more control points.',
+            True,
+            black)
         textRect = text.get_rect()
         textRect.centerx = screen.get_size()[0] // 2
         screen.blit(text, textRect)
+    else:
+        bspline.draw_curve(screen)
 
     pygame.display.update()
 
