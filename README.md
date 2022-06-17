@@ -7,7 +7,10 @@ Geometric Modelling Project about curves continuity
 - `python>=3.10`
 - `pygame==2.1.2`
 
-There is a `requeriments.txt` file for easy installation of dependencies, do so by doing `pip3 install -r requirements.txt`.
+There is a `requeriments.txt` file for easy installation of dependencies, do so by doing:
+```sh
+$ pip3 install -r requirements.txt
+```
 
 If you wish to use a virtual enviroment, do:
 ```sh
