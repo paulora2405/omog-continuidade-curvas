@@ -16,7 +16,6 @@ double screenx, screeny;
 double orderK = 2;
 double parameterInc = 0.0005;
 double cx, cy;
-double currentParam = 0.0 - 0.1;
 double gx, gy;
 double angle = 0.0;
 double angleX = 0.0;
@@ -124,8 +123,6 @@ int delta(double u) {
 void E_delta_1(double u) {
   ///// this function generates a point for parameter u based on the algorithm
   /////////////////
-  vector<double> Cx;
-  vector<double> Cy;
   double conX[50], conY[50];
 
   int k = orderK;
@@ -134,14 +131,14 @@ void E_delta_1(double u) {
 
   d = delta(u);  /// finding delta index
 
-  for(int i = 0; i <= k - 1; i++) {
+  for(int i = 0; i < k; i++) {
     conX[i] = controlPointsX.at(d - i);
     conY[i] = controlPointsY.at(d - i);
   }
 
-  for(int r = k; r >= 2; r--) {
+  for(int r = k; r > 1; r--) {
     int i = d;
-    for(int s = 0; s <= r - 1; s++) {
+    for(int s = 0; s < r; s++) {
       omega = (u - knotSequence.at(i)) / (knotSequence.at(i + r - 1) - knotSequence.at(i));
 
       conX[s] = omega * conX[s] + (1 - omega) * conX[s + 1];
@@ -207,7 +204,6 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
     angleX = 0.0;
 
     parameterInc = 0.0005;
-    currentParam = 0.0 - 0.1;
     orderK = 2;
     // system("CLS");
     cout << "Order: " << orderK << endl;
