@@ -4,7 +4,7 @@ Geometric Modelling Project about curves continuity
 ---
 
 ## Dependencies
-- `python>=3.10`
+- `python==3.10`
 - `pygame==2.1.2`
 
 There is a `requeriments.txt` file for easy installation of dependencies, do so by doing:
