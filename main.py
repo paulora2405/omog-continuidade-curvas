@@ -9,11 +9,10 @@ size = (1280, 720)
 def main():
     pygame.init()
     screen = pygame.display.set_mode(size)
-    print(screen.get_size())
     clock = pygame.time.Clock()
     fps = 60
     font = pygame.font.Font('freesansbold.ttf', 26)
-    bspline = BSpline(degree=6)
+    bspline = BSpline(degree=2)
     cp_index = 0
     moving_index = -1
     run = True
@@ -33,15 +32,14 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     run = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    bspline.kOrder += 1
+                if event.key == pygame.K_d:
+                    bspline.inc_order()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    if bspline.kOrder > 2:
-                        bspline.kOrder -= 1
+                if event.key == pygame.K_a:
+                    bspline.dec_order()
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                m_left, m_middle, m_right = pygame.mouse.get_pressed()
+                m_left, _, m_right = pygame.mouse.get_pressed()
                 if m_left:
                     x, y = pygame.mouse.get_pos()
                     found = False
@@ -72,6 +70,13 @@ def main():
         bspline.draw_connecting_lines(screen)
         bspline.draw_control_points(screen)
 
+        text = font.render(
+            f'Degree {bspline.degree}; K Order {bspline.kOrder}; Control points {bspline.get_nCP()}.',
+            True,
+            black)
+        textRect = text.get_rect()
+        textRect.centerx = screen.get_size()[0] // 2
+        screen.blit(text, textRect)
         # draws text for less cp than order
         if bspline.get_nCP() < bspline.kOrder:
             text = font.render(
@@ -79,17 +84,10 @@ def main():
                 True,
                 black)
             textRect = text.get_rect()
-            textRect.centerx = screen.get_size()[0] // 2
+            textRect.center = (screen.get_size()[0] // 2, 40)
             screen.blit(text, textRect)
         else:
-            text = font.render(
-                f'Degree {bspline.degree}; K Order {bspline.kOrder}; Control points {bspline.get_nCP()}.',
-                True,
-                black)
-            textRect = text.get_rect()
-            textRect.centerx = screen.get_size()[0] // 2
-            screen.blit(text, textRect)
-            bspline.draw_curve(screen)
+            bspline.draw_curve(screen, green)
 
         pygame.display.update()
 

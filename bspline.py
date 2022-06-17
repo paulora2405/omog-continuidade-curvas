@@ -20,6 +20,16 @@ class BSpline:
         self.control_points: list[ControlPoint] = control_points
         self.knotSequence: list[float] = []
 
+    def inc_order(self):
+        if self.kOrder < self.get_nCP():
+            self.kOrder += 1
+            self.degree = self.kOrder - 1
+
+    def dec_order(self):
+        if self.kOrder > 2:
+            self.kOrder -= 1
+            self.degree = self.kOrder - 1
+
     def get_nCP(self) -> int:
         return len(self.control_points)
 
@@ -44,22 +54,23 @@ class BSpline:
         for p in self.control_points:
             p.draw(screen, red)
 
-    def draw_curve(self, screen: pygame.Surface):
+    def draw_curve(self, screen: pygame.Surface, color: tuple[int, int, int]):
+        self.__updateKnotVectors()
         if self.kOrder <= self.get_nCP():
             i = 0.0
-            while i <= 1:
-                self.__draw_point(i, screen)
+            while i <= 1.0:
+                self.__draw_point(i, screen, color)
                 i += BSpline.param
 
-    def __draw_point(self, u: int, screen: pygame.Surface):
+    def __draw_point(self, u: int, screen: pygame.Surface, color: tuple[int, int, int]):
         coordX = [0.0 for _ in range(self.kOrder + 1)]
         coordY = [0.0 for _ in range(self.kOrder + 1)]
         delta_index: int = self.__find_delta_index(u)
 
         for i in range(self.kOrder):
-            coordX[i] = self.control_points[delta_index - 1].x / \
+            coordX[i] = self.control_points[delta_index - i].x / \
                 screen.get_size()[0]
-            coordY[i] = self.control_points[delta_index - 1].y / \
+            coordY[i] = self.control_points[delta_index - i].y / \
                 screen.get_size()[1]
 
         for r in range(self.kOrder, 1, -1):
@@ -67,16 +78,16 @@ class BSpline:
             for s in range(r):
                 omega = (u - self.knotSequence[i]) / \
                     (self.knotSequence[i + r - 1] -
-                     self.knotSequence[i] + 0.00001)
+                     self.knotSequence[i] + 0.0000000001)
                 coordX[s] = omega * coordX[s] + (1 - omega) * coordX[s + 1]
                 coordY[s] = omega * coordY[s] + (1 - omega) * coordY[s + 1]
                 i -= 1
 
         # calculations return normalized value [0,1]
         # coords in pygame are integers
-        x = int(coordX[0] * screen.get_size()[0])
-        y = int(coordY[0] * screen.get_size()[1])
-        pygame.draw.circle(screen, purple, (x, y), 2)
+        x = int(screen.get_size()[0] * coordX[0])
+        y = int(screen.get_size()[1] * coordY[0])
+        pygame.draw.circle(screen, color, (x, y), 1)
 
     def __find_delta_index(self, u: int):
         m = self.get_nCP() - 1
@@ -93,7 +104,7 @@ class BSpline:
         n = float(self.get_nCP())
         m = float(self.get_nCP() - 1)
         knot_value = 0.0
-        increment = 1.0 / (m - float(self.kOrder) + 2.0001)
+        increment = 1.0 / (m - float(self.kOrder) + 2.0000000001)
 
         for i in range(self.get_nCP() + self.kOrder):
             if i < self.kOrder:
