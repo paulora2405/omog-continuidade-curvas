@@ -32,7 +32,6 @@ bool drawCP = true;
 bool Drag = false;
 bool Draw = false;
 bool before = false;
-bool drawSurface = false;
 bool showGeometry = false;
 int clicked = 0;
 
@@ -44,8 +43,6 @@ void getKnotSqeuence();
 void drawCurve();
 int delta(double);
 void E_delta_1(double u);
-void drawGeometry(double);
-void drawSurfaceOfRevolution();
 
 void render() {
   glEnable(GL_DEPTH_TEST);
@@ -94,21 +91,11 @@ void render() {
     glPointSize(3);
     drawCurve();
   }
-
-  if(drawSurface == true) {
-    glColor3f(1.0, 1.0, 0.0);
-    glPointSize(1);
-    drawSurfaceOfRevolution();
-  }
 }
 
 void drawCurve() {
   ///////////// this function calls E_delta_1() to draw point for each parameter
   /// u ////////
-  vector<double> param;
-  double k = orderK;
-  double m = controlPointsX.size() - 1;
-
   for(double i = 0.0; i <= 1; i = i + parameterInc) {
     glBegin(GL_POINTS);
 
@@ -117,84 +104,19 @@ void drawCurve() {
     glVertex3f(cx, cy, 0.0f);  //// drawing a prticular point
     glEnd();
   }
-
-  ////// show geometry for a specific paramter ///////////////
-  if(showGeometry == true) {
-    drawGeometry(currentParam);  //// draw geometry
-    glColor3f(1.0, 0.3, 0.0);
-    glPointSize(10);
-    glBegin(GL_POINTS);
-    glVertex3f(gx, gy, 0.1f);
-    glEnd();
-  }
-}
-
-void drawSurfaceOfRevolution() {
-  ///////  this function creates surface of revolution //////
-
-  drawCP = false;
-  Draw = false;
-
-  vector<double> param;
-  double k = orderK;
-  double m = controlPointsX.size() - 1;
-  double r;
-  double sx, sy, sz, rx, ry, rz;
-
-  glPushMatrix();
-  glRotatef(angleX, 1, 0, 0);
-  glRotatef(angle, 0, 1, 0);
-
-  ////////// draw each curve /////////////
-
-  for(double x = 0.0; x < 360; x = x + 25) {
-    glPushMatrix();
-    glRotatef(x, 1, 0, 0);
-
-    for(int j = 0; j < allPointsX.size(); j++) {
-      sx = allPointsX.at(j);
-      sy = allPointsY.at(j);
-
-      glBegin(GL_POINTS);
-
-      glVertex3f(sx, sy, 0.0);  //// drawing a prticular point
-
-      glEnd();
-    }
-    glPopMatrix();
-  }
-
-  ///////////// draw each circle /////////////////
-
-  for(double x = 0.0; x < 360; x = x + 0.5) {
-    glPushMatrix();
-    glRotatef(x, 1, 0, 0);
-    for(int j = 0; j < allPointsX.size(); j = j + 200) {
-      sx = allPointsX.at(j);
-      sy = allPointsY.at(j);
-
-      glBegin(GL_POINTS);
-
-      glVertex3f(sx, sy, 0.0);  //// drawing a prticular point
-
-      glEnd();
-    }
-    glPopMatrix();
-  }
-  glPopMatrix();
 }
 
 int delta(double u) {
   ///// these function determines delta index ////////////////
-  int j = 0;
   int m = controlPointsX.size() - 1;
   int k = orderK;
   for(int i = 0; i <= m + k - 1; i++) {
     if(u >= knotSequence.at(i) && u < knotSequence.at(i + 1)) {
       return i;
     }
-    j++;
   }
+
+  cout << "`u` not in interval t_i <= u < t_i+1" << endl;;
 
   return -1;
 }
@@ -206,21 +128,16 @@ void E_delta_1(double u) {
   vector<double> Cy;
   double conX[50], conY[50];
 
-  int m = controlPointsX.size() - 1;
   int k = orderK;
   int d;
-  double a, b, omega;
+  double omega;
 
   d = delta(u);  /// finding delta index
 
   for(int i = 0; i <= k - 1; i++) {
-    a = controlPointsX.at(d - i);
-    b = controlPointsY.at(d - i);
-    conX[i] = a;
-    conY[i] = b;
+    conX[i] = controlPointsX.at(d - i);
+    conY[i] = controlPointsY.at(d - i);
   }
-
-  vector<double>::iterator p = Cx.begin();
 
   for(int r = k; r >= 2; r--) {
     int i = d;
@@ -238,55 +155,6 @@ void E_delta_1(double u) {
 
   allPointsX.push_back(cx);
   allPointsY.push_back(cy);
-}
-
-void drawGeometry(double currentParam) {
-  //// this function draws lines to show geometry for a specific paramtere
-  //////////////
-  double u = currentParam;
-  vector<double> Cx;
-  vector<double> Cy;
-  double conX[50], conY[50];
-
-  int m = controlPointsX.size() - 1;
-  int k = orderK;
-  int d;
-  double a, b, omega;
-
-  d = delta(u);
-
-  for(int i = 0; i <= k - 1; i++) {
-    a = controlPointsX.at(d - i);
-    b = controlPointsY.at(d - i);
-    conX[i] = a;
-    conY[i] = b;
-  }
-
-  vector<double>::iterator p = Cx.begin();
-
-  for(int r = k; r >= 2; r--) {
-    int i = d;
-    for(int s = 0; s <= r - 1; s++) {
-      omega = (u - knotSequence.at(i)) / (knotSequence.at(i + r - 1) - knotSequence.at(i));
-
-      glLineWidth(3);
-      glColor3f(1.0, 0.0, 0.0);
-
-      ////// drawing lines ///////////////
-      glBegin(GL_LINES);
-      glVertex3f(conX[s + 1], conY[s + 1], 0.0f);
-      glVertex3f(conX[s], conY[s], 0.0f);
-      glEnd();
-
-      conX[s] = omega * conX[s] + (1 - omega) * conX[s + 1];
-      conY[s] = omega * conY[s] + (1 - omega) * conY[s + 1];
-
-      i = i - 1;
-    }
-  }
-
-  gx = conX[0];  //// draw point at current parameter in geometry //////
-  gy = conY[0];
 }
 
 void getKnotSqeuence() {
@@ -331,7 +199,6 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
     Draw = false;
     showGeometry = false;
     drawCP = false;
-    drawSurface = false;
     controlPointsX.clear();
     controlPointsY.clear();
     allPointsX.clear();
@@ -374,18 +241,6 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
     }
   }
 
-  ////////////////   to start showing geometry   //////////////
-
-  if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS && Draw == true) {
-    currentParam = currentParam + 0.1;
-    if(currentParam <= 1) {
-      showGeometry = true;
-    } else {
-      showGeometry = false;
-      currentParam = 0.0 - 0.1;
-    }
-  }
-
   /////////////// to increase the increment step of parameter u //////////////
 
   if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
@@ -400,11 +255,6 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if(parameterInc > 0.001) {
       parameterInc = parameterInc - 0.005;
     }
-  }
-
-  if(key == GLFW_KEY_R && action == GLFW_PRESS) {
-    glPointSize(1);
-    drawSurface = true;
   }
 
   if(key == GLFW_KEY_E && action == GLFW_PRESS) {
