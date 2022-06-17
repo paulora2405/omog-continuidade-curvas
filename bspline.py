@@ -8,29 +8,32 @@ from controlpoint import ControlPoint
 class BSpline:
     param = 1
 
-    def __init__(self, order: int = -1, degree: int = -1, control_points: list[ControlPoint] = []):
-        if degree == -1 and order == -1:
+    def __init__(self, kOrder: int = -1, degree: int = -1, control_points: list[ControlPoint] = []):
+        if degree == -1 and kOrder == -1:
             raise ArgumentError('either order or degree is necessary')
         if degree != -1 and degree <= 0:
             raise ValueError('degree has to be bigger than 0')
-        if order != -1 and order <= 1:
+        if kOrder != -1 and kOrder <= 1:
             raise ValueError('order has to be bigger than 1')
-        self.degree: int = degree if degree != -1 else order - 1
-        self.order: int = order if order != -1 else degree + 1
+        self.degree: int = degree if degree != -1 else kOrder - 1
+        self.kOrder: int = kOrder if kOrder != -1 else degree + 1
         self.control_points: list[ControlPoint] = control_points
         self.knotSequence: list[int] = []
 
+    def get_nCP(self) -> int:
+        return len(self.control_points)
+
     def update_control_points(self, control_points: list[ControlPoint]):
         self.control_points = control_points
-        self.__updateKnotSequence()
+        self.__updateKnotVectors()
 
     def add_control_point(self, control_point: ControlPoint):
         self.control_points.append(control_point)
-        self.__updateKnotSequence()
+        self.__updateKnotVectors()
 
     def remove_control_point(self, control_point: ControlPoint):
         self.control_points.remove(control_point)
-        self.__updateKnotSequence()
+        self.__updateKnotVectors()
 
     def draw_connecting_lines(self, screen: pygame.Surface):
         for i in range(len(self.control_points) - 1):
@@ -42,57 +45,61 @@ class BSpline:
             p.draw(screen, red)
 
     def draw_curve(self, screen: pygame.Surface):
-        if self.order >= len(self.control_points):
+        if self.kOrder >= self.get_nCP():
             i = 0.0
             while i <= 1:
                 self.__draw_point(i, screen)
                 i += BSpline.param
 
     def __draw_point(self, u: int, screen: pygame.Surface):
-        conX = [0 * self.order]
-        conY = [0 * self.order]
+        coordX = [p.x for p in self.control_points]
+        coordY = [p.y for p in self.control_points]
         delta_index: int = self.__find_delta_index(u)
 
-        for i in range(self.order - 1):
-            conX[i] = self.control_points[delta_index - 1].x
-            conY[i] = self.control_points[delta_index - 1].y
+        print(f'conX={len(coordX)}; CP={self.get_nCP()}')
+        for i in range(self.kOrder - 1):
+            coordX[i] = self.control_points[delta_index - 1].x
+            coordY[i] = self.control_points[delta_index - 1].y
 
-        for r in range(self.order, 1, -1):
+        for k in range(self.kOrder, 1, -1):
             i = delta_index
-            for s in range(r - 1):
+            for s in range(k - 1):
                 omega = u - \
-                    (self.knotSequence[i] / self.knotSequence[i + r - 1]) - \
+                    (self.knotSequence[i] / self.knotSequence[i + k - 1]) - \
                     self.knotSequence[i]
-                conX[s] = omega * conX[s] + (1 - omega) * conX[s + 1]
-                conY[s] = omega * conY[s] + (1 - omega) * conY[s + 1]
+                coordX[s] = omega * coordX[s] + (1 - omega) * coordX[s + 1]
+                coordY[s] = omega * coordY[s] + (1 - omega) * coordY[s + 1]
                 i -= 1
 
         # calculations return normalized value [0,1]
         # coords in pygame are integers
-        x = int(conX[0] * screen.get_size()[0])
-        y = int(conY[0] * screen.get_size()[1])
+        x = int(coordX[0] * screen.get_size()[0])
+        y = int(coordY[0] * screen.get_size()[1])
         pygame.draw.circle(screen, purple, (x, y), 1)
 
     def __find_delta_index(self, u: int):
-        j = 0
         m = len(self.control_points) - 1
-        for i in range(m + self.order - 1):
+        for i in range(m + self.kOrder - 1):
             if u >= self.knotSequence[i] and u < self.knotSequence[i+1]:
                 return i
-            j += 1
+        raise ValueError('not in interval t_i <= u < t_i+1')
         return -1
 
-    def __updateKnotSequence(self):
-        m = len(self.control_points) - 1
-        total = m + self.order + 1
-        knot_value = 0
-        increment = 1 / (m - self.order + 2)
+    def __updateKnotVectors(self):
         self.knotSequence.clear()
-        for i in range(total):
-            if i < self.order:
+
+        n = len(self.control_points)
+        m = n - 1
+        knot_value = 0
+        if n - self.kOrder + 2 == 0:
+            return
+        increment = 1 / (n - self.kOrder + 2)
+
+        for i in range(n + self.kOrder):
+            if i < self.kOrder:
                 self.knotSequence.append(0)
-            elif i >= self.order and i < total - self.order:
+            elif i >= self.kOrder and i <= n:
                 knot_value += increment
                 self.knotSequence.append(knot_value)
-            elif i >= total - self.order:
+            elif i > n:
                 self.knotSequence.append(1)
