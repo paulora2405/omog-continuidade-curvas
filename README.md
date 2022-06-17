@@ -25,6 +25,7 @@ Hotkeys:
 - `S` = Clears all Control Points.
 - `Left Mouse Button` = Adds a Control Point or Moves Control Point below mouse position.
 - `Right Mouse Button` = Removes a Control Point.
+- `Escape` = Exits program.
 
 ## Functions and Classes
 ### BSpline Class
