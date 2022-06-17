@@ -1,4 +1,4 @@
-# omog-continuidade-curvas
+# Curves Continuity
 Geometric Modelling Project about curves continuity
 
 ---
