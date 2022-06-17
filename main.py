@@ -12,7 +12,7 @@ def main():
     clock = pygame.time.Clock()
     fps = 60
     font = pygame.font.Font('freesansbold.ttf', 26)
-    bspline = BSpline(degree=2)
+    bspline = BSpline(degree=6)
     cp_index = 0
     moving_index = -1
     run = True
@@ -31,12 +31,12 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_d:
+                elif event.key == pygame.K_d:
                     bspline.inc_order()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
+                elif event.key == pygame.K_a:
                     bspline.dec_order()
+                elif event.key == pygame.K_s:
+                    bspline.clear_control_points()
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 m_left, _, m_right = pygame.mouse.get_pressed()
@@ -67,11 +67,8 @@ def main():
                 x, y = pygame.mouse.get_pos()
                 bspline.control_points[moving_index].set_pos(x, y)
 
-        bspline.draw_connecting_lines(screen)
-        bspline.draw_control_points(screen)
-
         text = font.render(
-            f'Degree {bspline.degree}; K Order {bspline.kOrder}; Control points {bspline.get_nCP()}.',
+            f'Degree {bspline.degree}      K Order {bspline.kOrder}      Control points {bspline.get_nCP()}',
             True,
             black)
         textRect = text.get_rect()
@@ -80,7 +77,7 @@ def main():
         # draws text for less cp than order
         if bspline.get_nCP() < bspline.kOrder:
             text = font.render(
-                f'Pick at least {bspline.kOrder - bspline.get_nCP()} more control points.',
+                f'Pick at least {bspline.kOrder - bspline.get_nCP()} more control points!',
                 True,
                 black)
             textRect = text.get_rect()
@@ -88,6 +85,8 @@ def main():
             screen.blit(text, textRect)
         else:
             bspline.draw_curve(screen, green)
+        bspline.draw_connecting_lines(screen)
+        bspline.draw_control_points(screen)
 
         pygame.display.update()
 
