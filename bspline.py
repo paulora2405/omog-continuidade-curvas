@@ -33,8 +33,8 @@ class BSpline:
     def get_nCP(self) -> int:
         return len(self.control_points)
 
-    def update_control_points(self, control_points: list[ControlPoint]):
-        self.control_points = control_points
+    def clear_control_points(self):
+        self.control_points = []
         self.__updateKnotVectors()
 
     def add_control_point(self, control_point: ControlPoint):
