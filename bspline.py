@@ -6,7 +6,7 @@ from controlpoint import ControlPoint
 
 
 class BSpline:
-    param = 1
+    param = 0.0005
 
     def __init__(self, kOrder: int = -1, degree: int = -1, control_points: list[ControlPoint] = []):
         if degree == -1 and kOrder == -1:
@@ -18,7 +18,7 @@ class BSpline:
         self.degree: int = degree if degree != -1 else kOrder - 1
         self.kOrder: int = kOrder if kOrder != -1 else degree + 1
         self.control_points: list[ControlPoint] = control_points
-        self.knotSequence: list[int] = []
+        self.knotSequence: list[float] = []
 
     def get_nCP(self) -> int:
         return len(self.control_points)
@@ -45,28 +45,29 @@ class BSpline:
             p.draw(screen, red)
 
     def draw_curve(self, screen: pygame.Surface):
-        if self.kOrder >= self.get_nCP():
+        if self.kOrder <= self.get_nCP():
             i = 0.0
             while i <= 1:
                 self.__draw_point(i, screen)
                 i += BSpline.param
 
     def __draw_point(self, u: int, screen: pygame.Surface):
-        coordX = [p.x for p in self.control_points]
-        coordY = [p.y for p in self.control_points]
+        coordX = [0.0 for _ in range(self.kOrder + 1)]
+        coordY = [0.0 for _ in range(self.kOrder + 1)]
         delta_index: int = self.__find_delta_index(u)
 
-        print(f'conX={len(coordX)}; CP={self.get_nCP()}')
-        for i in range(self.kOrder - 1):
-            coordX[i] = self.control_points[delta_index - 1].x
-            coordY[i] = self.control_points[delta_index - 1].y
+        for i in range(self.kOrder):
+            coordX[i] = self.control_points[delta_index - 1].x / \
+                screen.get_size()[0]
+            coordY[i] = self.control_points[delta_index - 1].y / \
+                screen.get_size()[1]
 
-        for k in range(self.kOrder, 1, -1):
+        for r in range(self.kOrder, 1, -1):
             i = delta_index
-            for s in range(k - 1):
-                omega = u - \
-                    (self.knotSequence[i] / self.knotSequence[i + k - 1]) - \
-                    self.knotSequence[i]
+            for s in range(r):
+                omega = (u - self.knotSequence[i]) / \
+                    (self.knotSequence[i + r - 1] -
+                     self.knotSequence[i] + 0.00001)
                 coordX[s] = omega * coordX[s] + (1 - omega) * coordX[s + 1]
                 coordY[s] = omega * coordY[s] + (1 - omega) * coordY[s + 1]
                 i -= 1
@@ -75,31 +76,30 @@ class BSpline:
         # coords in pygame are integers
         x = int(coordX[0] * screen.get_size()[0])
         y = int(coordY[0] * screen.get_size()[1])
-        pygame.draw.circle(screen, purple, (x, y), 1)
+        pygame.draw.circle(screen, purple, (x, y), 2)
 
     def __find_delta_index(self, u: int):
-        m = len(self.control_points) - 1
+        m = self.get_nCP() - 1
         for i in range(m + self.kOrder - 1):
             if u >= self.knotSequence[i] and u < self.knotSequence[i+1]:
                 return i
-        raise ValueError('not in interval t_i <= u < t_i+1')
-        return -1
+        raise ValueError('`u` not in interval t_i <= u < t_i+1')
 
     def __updateKnotVectors(self):
         self.knotSequence.clear()
-
-        n = len(self.control_points)
-        m = n - 1
-        knot_value = 0
-        if n - self.kOrder + 2 == 0:
+        if self.get_nCP() - self.kOrder + 2 == 0:
             return
-        increment = 1 / (n - self.kOrder + 2)
 
-        for i in range(n + self.kOrder):
+        n = float(self.get_nCP())
+        m = float(self.get_nCP() - 1)
+        knot_value = 0.0
+        increment = 1.0 / (m - float(self.kOrder) + 2.0001)
+
+        for i in range(self.get_nCP() + self.kOrder):
             if i < self.kOrder:
-                self.knotSequence.append(0)
-            elif i >= self.kOrder and i <= n:
+                self.knotSequence.append(0.0)
+            elif i >= self.kOrder and i < self.get_nCP():
                 knot_value += increment
                 self.knotSequence.append(knot_value)
-            elif i > n:
-                self.knotSequence.append(1)
+            elif i >= self.get_nCP():
+                self.knotSequence.append(1.0)
