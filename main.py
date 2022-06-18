@@ -22,7 +22,7 @@ def main():
         clock.tick(fps)
         frameRate = int(clock.get_fps())
         pygame.display.set_caption(
-            "OMOG Continuidade de Curvas - Paulo Albuquerque - FPS : {}".format(frameRate))
+            f'Curve Continuity - Paulo Albuquerque - {frameRate} FPS')
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -75,8 +75,13 @@ def main():
         textRect.centerx = screen.get_size()[0] // 2
         screen.blit(text, textRect)
 
-        # draws text for less cp than order
-        if bspline.get_nCP() < bspline.kOrder:
+        # draws connecting lines firts so they are further back
+        bspline.draw_connecting_lines(screen)
+        if bspline.can_draw():
+            # draws the curve
+            bspline.draw_curve(screen, blue)
+        else:
+            # draws text for less cp than order
             text = font.render(
                 f'Pick at least {bspline.kOrder - bspline.get_nCP()} more control points!',
                 True,
@@ -84,9 +89,7 @@ def main():
             textRect = text.get_rect()
             textRect.center = (screen.get_size()[0] // 2, 40)
             screen.blit(text, textRect)
-        else:
-            bspline.draw_curve(screen, blue)
-        bspline.draw_connecting_lines(screen)
+        # draws the control points last so they are at above everything else
         bspline.draw_control_points(screen)
 
         pygame.display.update()
