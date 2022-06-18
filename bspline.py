@@ -1,14 +1,16 @@
 # B-Spline Grau 6 (Não Uniforme)
 from argparse import ArgumentError
+from sys import stderr
 import pygame
 from colors import *
 from controlpoint import ControlPoint
+from typing import List, Tuple
 
 
 class BSpline:
     param = 0.0005
 
-    def __init__(self, kOrder: int = -1, degree: int = -1, control_points: list[ControlPoint] = []):
+    def __init__(self, kOrder: int = -1, degree: int = -1, control_points: List[ControlPoint] = []):
         if degree == -1 and kOrder == -1:
             raise ArgumentError('either order or degree is necessary')
         if degree != -1 and degree <= 0:
@@ -17,9 +19,9 @@ class BSpline:
             raise ValueError('order has to be bigger than 1')
         self.degree: int = degree if degree != -1 else kOrder - 1
         self.kOrder: int = kOrder if kOrder != -1 else degree + 1
-        self.control_points: list[ControlPoint] = control_points
-        self.knotSequence: list[float] = []
-        self.curve_points: list[tuple[int, int]] = []
+        self.control_points: List[ControlPoint] = control_points
+        self.knotSequence: List[float] = []
+        self.curve_points: List[Tuple[int, int]] = []
         self.changed_state: bool = True
 
     def inc_order(self):
@@ -37,7 +39,7 @@ class BSpline:
     def get_nCP(self) -> int:
         return len(self.control_points)
 
-    def move_control_point(self, control_point_index: int, coord: tuple[int, int]):
+    def move_control_point(self, control_point_index: int, coord: Tuple[int, int]):
         self.changed_state = True
         self.control_points[control_point_index].set_pos(*coord)
 
@@ -62,10 +64,10 @@ class BSpline:
         for p in self.control_points:
             p.draw(screen)
 
-    def draw_curve(self, screen: pygame.Surface, color: tuple[int, int, int]):
+    def draw_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
         if not self.changed_state:
             self.__draw_stored_curve(screen, color)
-        else:
+        elif self.can_draw():
             self.changed_state = False
             self.__updateKnotVectors()
             self.curve_points.clear()
@@ -74,12 +76,14 @@ class BSpline:
                 while i <= 1.0:
                     self.__draw_point(i, screen, color)
                     i += BSpline.param
+        else:
+            print('error: cannot draw the curve with current state', file=stderr)
 
-    def __draw_stored_curve(self, screen: pygame.Surface, color: tuple[int, int, int]):
+    def __draw_stored_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
         for p in self.curve_points:
             pygame.draw.circle(screen, color, p, 2)
 
-    def __draw_point(self, u: int, screen: pygame.Surface, color: tuple[int, int, int]):
+    def __draw_point(self, u: int, screen: pygame.Surface, color: Tuple[int, int, int]):
         coordX = [0.0 for _ in range(self.kOrder + 1)]
         coordY = [0.0 for _ in range(self.kOrder + 1)]
         delta_index: int = self.__find_delta_index(u)

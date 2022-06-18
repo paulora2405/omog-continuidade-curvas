@@ -1,9 +1,10 @@
 import pygame
 from colors import *
+from typing import Tuple
 
 
 class ControlPoint:
-    def __init__(self, x: int, y: int, id: int, color: tuple[int, int, int]):
+    def __init__(self, x: int, y: int, id: int, color: Tuple[int, int, int]):
         self.x = x
         self.y = y
         self.id = id
@@ -12,7 +13,7 @@ class ControlPoint:
         self.color = color
         self.font = pygame.font.Font('freesansbold.ttf', 16)
 
-    def get_pos(self) -> tuple[int, int]:
+    def get_pos(self) -> Tuple[int, int]:
         return (self.x, self.y)
 
     def set_pos(self, x: int, y: int):
