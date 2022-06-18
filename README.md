@@ -14,8 +14,8 @@ $ pip3 install -r requirements.txt
 
 If you wish to use a virtual enviroment, do:
 ```sh
-$ python3 -m venv <Nome-do-ambiente>
-$ source <Nome-do-ambiente>/bin/activate
+$ python3 -m venv <venv-name>
+$ source <venv-name>/bin/activate
 $ pip3 install -r requirements
 ```
 
