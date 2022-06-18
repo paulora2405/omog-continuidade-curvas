@@ -1,12 +1,20 @@
+from argparse import ArgumentError
 import pygame
+import sys
 from colors import *
 from controlpoint import ControlPoint
 from bspline import BSpline
 
-size = (1280, 720)
-
 
 def main():
+    if len(sys.argv) == 1:
+        size = (1280, 720)
+    elif len(sys.argv) == 3:
+        size = (int(sys.argv[1]), int(sys.argv[2]))
+    else:
+        raise ArgumentError(
+            argument=None, message='either pass WIDTH HEIGHT or no arguments')
+
     pygame.init()
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
