@@ -50,7 +50,7 @@ def main():
                             found = True
                     if not found:
                         bspline.add_control_point(ControlPoint(
-                            x, y, cp_index))
+                            x, y, cp_index, red))
                         cp_index += 1
                 elif m_right:
                     x, y = pygame.mouse.get_pos()
@@ -64,8 +64,8 @@ def main():
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
             if moving_index != -1:
-                x, y = pygame.mouse.get_pos()
-                bspline.control_points[moving_index].set_pos(x, y)
+                bspline.move_control_point(
+                    moving_index, pygame.mouse.get_pos())
 
         text = font.render(
             f'Degree {bspline.degree}      K Order {bspline.kOrder}      Control points {bspline.get_nCP()}',
@@ -74,6 +74,7 @@ def main():
         textRect = text.get_rect()
         textRect.centerx = screen.get_size()[0] // 2
         screen.blit(text, textRect)
+
         # draws text for less cp than order
         if bspline.get_nCP() < bspline.kOrder:
             text = font.render(
@@ -84,7 +85,7 @@ def main():
             textRect.center = (screen.get_size()[0] // 2, 40)
             screen.blit(text, textRect)
         else:
-            bspline.draw_curve(screen, green)
+            bspline.draw_curve(screen, blue)
         bspline.draw_connecting_lines(screen)
         bspline.draw_control_points(screen)
 

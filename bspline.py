@@ -19,31 +19,39 @@ class BSpline:
         self.kOrder: int = kOrder if kOrder != -1 else degree + 1
         self.control_points: list[ControlPoint] = control_points
         self.knotSequence: list[float] = []
+        self.curve_points: list[tuple[int, int]] = []
+        self.changed_state: bool = True
 
     def inc_order(self):
-        if self.kOrder < self.get_nCP():
-            self.kOrder += 1
-            self.degree = self.kOrder - 1
+        self.kOrder += 1
+        self.degree = self.kOrder - 1
 
     def dec_order(self):
         if self.kOrder > 2:
             self.kOrder -= 1
             self.degree = self.kOrder - 1
 
+    def can_draw(self):
+        return self.kOrder < self.get_nCP()
+
     def get_nCP(self) -> int:
         return len(self.control_points)
 
+    def move_control_point(self, control_point_index: int, coord: tuple[int, int]):
+        self.changed_state = True
+        self.control_points[control_point_index].set_pos(*coord)
+
     def clear_control_points(self):
+        self.changed_state = True
         self.control_points = []
-        self.__updateKnotVectors()
 
     def add_control_point(self, control_point: ControlPoint):
+        self.changed_state = True
         self.control_points.append(control_point)
-        self.__updateKnotVectors()
 
     def remove_control_point(self, control_point: ControlPoint):
+        self.changed_state = True
         self.control_points.remove(control_point)
-        self.__updateKnotVectors()
 
     def draw_connecting_lines(self, screen: pygame.Surface):
         for i in range(len(self.control_points) - 1):
@@ -52,15 +60,24 @@ class BSpline:
 
     def draw_control_points(self, screen: pygame.Surface):
         for p in self.control_points:
-            p.draw(screen, red)
+            p.draw(screen)
 
     def draw_curve(self, screen: pygame.Surface, color: tuple[int, int, int]):
-        self.__updateKnotVectors()
-        if self.kOrder <= self.get_nCP():
-            i = 0.0
-            while i <= 1.0:
-                self.__draw_point(i, screen, color)
-                i += BSpline.param
+        if not self.changed_state:
+            self.__draw_stored_curve(screen, color)
+        else:
+            self.changed_state = False
+            self.__updateKnotVectors()
+            self.curve_points.clear()
+            if self.kOrder <= self.get_nCP():
+                i = 0.0
+                while i <= 1.0:
+                    self.__draw_point(i, screen, color)
+                    i += BSpline.param
+
+    def __draw_stored_curve(self, screen: pygame.Surface, color: tuple[int, int, int]):
+        for p in self.curve_points:
+            pygame.draw.circle(screen, color, p, 2)
 
     def __draw_point(self, u: int, screen: pygame.Surface, color: tuple[int, int, int]):
         coordX = [0.0 for _ in range(self.kOrder + 1)]
@@ -87,7 +104,8 @@ class BSpline:
         # coords in pygame are integers
         x = int(screen.get_size()[0] * coordX[0])
         y = int(screen.get_size()[1] * coordY[0])
-        pygame.draw.circle(screen, color, (x, y), 1)
+        self.curve_points.append((x, y))
+        pygame.draw.circle(screen, color, (x, y), 2)
 
     def __find_delta_index(self, u: int):
         m = self.get_nCP() - 1
