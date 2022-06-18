@@ -20,16 +20,23 @@ $ pip3 install -r requirements
 ```
 
 ## How to Run
-Run by doing `python3 main.py`.
+Run by doing `$ python3 main.py`.
 
 Hotkeys:
 - `A` = Decrease the order of the B-Spline.
-- `D` = Increaase the order of the B-Spline.
+- `D` = Increase the order of the B-Spline.
 - `S` = Clears all Control Points.
-- `Left Mouse Button` = Adds a Control Point or Moves Control Point below mouse position.
-- `Right Mouse Button` = Removes a Control Point.
+- `Left Mouse Button` = Adds a Control Point or Moves the Control Point below mouse position.
+- `Right Mouse Button` = Removes the Control Point below the mouse position.
 - `Escape` = Exits program.
 
 ## Functions and Classes
-### BSpline Class
 ### ControlPoint Class
+- Has `x` and `y` coordinate attribute and a `id` number.
+- Has a collision with mouse detection and drawing function.
+
+### BSpline Class
+- Has a degree and order which can increased or decreased.
+- Has a vector of Control Points, and a vector of the Knots.
+- It can cache an already calculated curve and draw it faster if no changes are made to the state of the B-Spline.
+- When the state does change, via moving, adding or removing Control Points, it calculates the knots and finds evenly spaced points in the curve, which are spaced according to the `BSpline.param` class attribute.
