@@ -21,6 +21,7 @@ $ pip3 install -r requirements
 
 ## How to Run
 Run by doing `$ python3 main.py`.
+The default window resolution is `1280x720`, if you wish to change it, run with the following arguments `$ python3 main.py WIDTH HEIGHT`
 
 Hotkeys:
 - `A` = Decrease the order of the B-Spline.
