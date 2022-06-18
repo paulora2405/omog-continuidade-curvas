@@ -31,8 +31,8 @@ class BSpline:
             self.kOrder -= 1
             self.degree = self.kOrder - 1
 
-    def can_draw(self):
-        return self.kOrder < self.get_nCP()
+    def can_draw(self) -> bool:
+        return self.kOrder <= self.get_nCP()
 
     def get_nCP(self) -> int:
         return len(self.control_points)
