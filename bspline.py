@@ -25,10 +25,12 @@ class BSpline:
         self.changed_state: bool = True
 
     def inc_order(self):
+        self.changed_state = True
         self.kOrder += 1
         self.degree = self.kOrder - 1
 
     def dec_order(self):
+        self.changed_state = True
         if self.kOrder > 2:
             self.kOrder -= 1
             self.degree = self.kOrder - 1
