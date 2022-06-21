@@ -21,8 +21,6 @@ def main():
     fps = 60
     font = pygame.font.Font('freesansbold.ttf', 26)
     bspline = BSpline(degree=6)
-    cp_index = 0
-    moving_index = -1
     run = True
 
     while run:
@@ -32,48 +30,9 @@ def main():
         pygame.display.set_caption(
             f'Curve Continuity - Paulo Albuquerque - {frameRate} FPS')
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
+        run = event_handling(bspline)
 
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    run = False
-                elif event.key == pygame.K_d:
-                    bspline.inc_order()
-                elif event.key == pygame.K_a:
-                    bspline.dec_order()
-                elif event.key == pygame.K_s:
-                    bspline.clear_control_points()
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                m_left, _, m_right = pygame.mouse.get_pressed()
-                if m_left:
-                    x, y = pygame.mouse.get_pos()
-                    found = False
-                    for cp in bspline.control_points:
-                        if cp.is_bellow(x, y):
-                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                            moving_index = bspline.control_points.index(cp)
-                            found = True
-                    if not found:
-                        bspline.add_control_point(ControlPoint(
-                            x, y, cp_index, red))
-                        cp_index += 1
-                elif m_right:
-                    x, y = pygame.mouse.get_pos()
-                    for cp in bspline.control_points:
-                        if cp.is_bellow(x, y):
-                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                            bspline.remove_control_point(cp)
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                moving_index = -1
-                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-
-            if moving_index != -1:
-                bspline.move_control_point(
-                    moving_index, pygame.mouse.get_pos())
+        bspline.move_control_point(pygame.mouse.get_pos())
 
         text = font.render(
             f'Degree {bspline.degree}      K Order {bspline.kOrder}      Control points {bspline.get_nCP()}',
@@ -103,6 +62,50 @@ def main():
         pygame.display.update()
 
     pygame.quit()
+
+
+def event_handling(bspline: BSpline) -> bool:
+    run = True
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                run = False
+            elif event.key == pygame.K_d:
+                bspline.inc_order()
+            elif event.key == pygame.K_a:
+                bspline.dec_order()
+            elif event.key == pygame.K_s:
+                bspline.clear_control_points()
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            m_left, _, m_right = pygame.mouse.get_pressed()
+            if m_left:
+                x, y = pygame.mouse.get_pos()
+                found = False
+                for cp in bspline.control_points:
+                    if cp.is_bellow(x, y):
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                        bspline.set_moving(cp)
+                        found = True
+                        break
+                if not found:
+                    bspline.add_control_point(ControlPoint(
+                        x, y, bspline.index_control_point, red))
+            elif m_right:
+                x, y = pygame.mouse.get_pos()
+                for cp in bspline.control_points:
+                    if cp.is_bellow(x, y):
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                        bspline.remove_control_point(cp)
+                        break
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            bspline.set_not_moving()
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+    return run
 
 
 if __name__ == "__main__":
