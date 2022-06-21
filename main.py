@@ -92,8 +92,7 @@ def event_handling(bspline: BSpline) -> bool:
                         found = True
                         break
                 if not found:
-                    bspline.add_control_point(ControlPoint(
-                        x, y, bspline.index_control_point, red))
+                    bspline.add_control_point(x, y, red)
             elif m_right:
                 x, y = pygame.mouse.get_pos()
                 for cp in bspline.control_points:

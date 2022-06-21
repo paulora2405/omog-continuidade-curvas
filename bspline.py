@@ -23,7 +23,6 @@ class BSpline:
         self.knotSequence: List[float] = []
         self.curve_points: List[Tuple[int, int]] = []
         self.changed_state: bool = True
-        self.index_control_point: int = 0
         self.moving_index: int = -1
 
     def inc_order(self):
@@ -64,14 +63,18 @@ class BSpline:
         self.changed_state = True
         self.control_points = []
 
-    def add_control_point(self, control_point: ControlPoint):
+    def add_control_point(self, x: int, y: int, color: Tuple[int, int, int]):
         self.changed_state = True
-        self.control_points.append(control_point)
-        self.index_control_point += 1
+        self.control_points.append(ControlPoint(x, y, self.get_nCP(), color))
 
     def remove_control_point(self, control_point: ControlPoint):
         self.changed_state = True
         self.control_points.remove(control_point)
+        self.__update_control_points_indexes()
+
+    def __update_control_points_indexes(self):
+        for index, cp in enumerate(self.control_points):
+            cp.id = index
 
     def draw_connecting_lines(self, screen: pygame.Surface):
         for i in range(len(self.control_points) - 1):
