@@ -23,6 +23,8 @@ class BSpline:
         self.knotSequence: List[float] = []
         self.curve_points: List[Tuple[int, int]] = []
         self.changed_state: bool = True
+        self.index_control_point: int = 0
+        self.moving_index: int = -1
 
     def inc_order(self):
         self.changed_state = True
@@ -41,9 +43,22 @@ class BSpline:
     def get_nCP(self) -> int:
         return len(self.control_points)
 
-    def move_control_point(self, control_point_index: int, coord: Tuple[int, int]):
-        self.changed_state = True
-        self.control_points[control_point_index].set_pos(*coord)
+    def set_moving(self, control_point: ControlPoint):
+        self.moving_index = self.control_points.index(control_point)
+
+    def set_not_moving(self):
+        self.moving_index = -1
+
+    def is_moving(self) -> bool:
+        return self.moving_index != -1
+
+    def move_control_point(self, coord: Tuple[int, int]):
+        if self.is_moving():
+            if coord != self.control_points[self.moving_index].get_pos():
+                self.changed_state = True
+                self.control_points[self.moving_index].set_pos(*coord)
+            else:
+                self.changed_state = False
 
     def clear_control_points(self):
         self.changed_state = True
@@ -52,6 +67,7 @@ class BSpline:
     def add_control_point(self, control_point: ControlPoint):
         self.changed_state = True
         self.control_points.append(control_point)
+        self.index_control_point += 1
 
     def remove_control_point(self, control_point: ControlPoint):
         self.changed_state = True
@@ -125,7 +141,6 @@ class BSpline:
         if self.get_nCP() - self.kOrder + 2 == 0:
             return
 
-        n = float(self.get_nCP())
         m = float(self.get_nCP() - 1)
         knot_value = 0.0
         increment = 1.0 / (m - float(self.kOrder) + 2.0000000001)
