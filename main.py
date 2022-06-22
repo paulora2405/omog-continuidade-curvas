@@ -2,8 +2,8 @@ from argparse import ArgumentError
 import pygame
 import sys
 from colors import *
-from controlpoint import ControlPoint
 from bspline import BSpline
+from typing import Tuple
 
 
 def main():
@@ -34,13 +34,8 @@ def main():
 
         bspline.move_control_point(pygame.mouse.get_pos())
 
-        text = font.render(
-            f'Degree {bspline.degree}      K Order {bspline.kOrder}      Control points {bspline.get_nCP()}',
-            True,
-            black)
-        textRect = text.get_rect()
-        textRect.centerx = screen.get_size()[0] // 2
-        screen.blit(text, textRect)
+        render_text(f'Degree {bspline.degree}      K Order {bspline.kOrder}      Control points {bspline.get_nCP()}',
+                    (screen.get_size()[0] // 2, 14), screen, font)
 
         # draws connecting lines firts so they are further back
         bspline.draw_connecting_lines(screen)
@@ -49,13 +44,8 @@ def main():
             bspline.draw_curve(screen, blue)
         else:
             # draws text for less cp than order
-            text = font.render(
-                f'Pick at least {bspline.kOrder - bspline.get_nCP()} more control points!',
-                True,
-                black)
-            textRect = text.get_rect()
-            textRect.center = (screen.get_size()[0] // 2, 40)
-            screen.blit(text, textRect)
+            render_text(f'Pick at least {bspline.kOrder - bspline.get_nCP()} more control points!',
+                        (screen.get_size()[0] // 2, 40), screen, font)
         # draws the control points last so they are at above everything else
         bspline.draw_control_points(screen)
 
@@ -105,6 +95,13 @@ def event_handling(bspline: BSpline) -> bool:
             bspline.set_not_moving()
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
     return run
+
+
+def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font):
+    textRender = font.render(text, True, black)
+    textRect = textRender.get_rect()
+    textRect.center = pos
+    screen.blit(textRender, textRect)
 
 
 if __name__ == "__main__":
