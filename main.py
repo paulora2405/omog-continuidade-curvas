@@ -42,8 +42,7 @@ def main():
                     (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 14), screen, font, blue)
         render_text(f'{"<-" if fcs else ""} Selected {"->" if not fcs else ""}',
                     (screen.get_size()[0] // 2, 14), screen, font, red if fcs else blue)
-        render_text('Space key switches', (screen.get_size()
-                    [0] // 2, 40), screen, font, black)
+        render_hotkeys(screen)
 
         bspline.draw_connecting_lines(screen)
         bezier.draw_connecting_lines(screen)
@@ -89,7 +88,10 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected) -> Tu
                 else:
                     bezier.dec_degree()
             elif event.key == pygame.K_s:
-                bspline.clear_control_points()
+                if fcs:
+                    bspline.clear_control_points()
+                else:
+                    bezier.clear_control_points()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             m_left, _, m_right = pygame.mouse.get_pressed()
@@ -116,10 +118,30 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected) -> Tu
     return run, fcs
 
 
-def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int]):
+def render_hotkeys(screen: pygame.Surface):
+    font_size = 14
+    font = pygame.font.Font('freesansbold.ttf', font_size)
+    hotkeys = [
+        'Space - Switch Curve',
+        'Mouse Left - Add or move CP',
+        'Mouse Right - Remove CP',
+        'S - Clear CPs',
+        'A - Decrease Degree',
+        'D - Increase Degree',
+    ]
+    hotkeys.reverse()
+    for i, hotkey in enumerate(hotkeys):
+        render_text(hotkey, (0, screen.get_size()
+                             [1] - i * font_size), screen, font, black, center=False)
+
+
+def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int], center=True):
     textRender = font.render(text, True, color)
     textRect = textRender.get_rect()
-    textRect.center = pos
+    if center:
+        textRect.center = pos
+    else:
+        textRect.bottomleft = pos
     screen.blit(textRender, textRect)
 
 
