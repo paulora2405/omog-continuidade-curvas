@@ -87,24 +87,23 @@ class BSpline:
 
     def draw_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
         if not self.changed_state:
-            self.__draw_stored_curve(screen, color)
+            self.__draw_cached_curve(screen, color)
         elif self.can_draw():
             self.changed_state = False
             self.__updateKnotVectors()
             self.curve_points.clear()
-            if self.kOrder <= self.get_nCP():
-                i = 0.0
-                while i <= 1.0:
-                    self.__draw_point(i, screen, color)
-                    i += BSpline.param
+            i = 0.0
+            while i <= 1.0:
+                self.__calculate_point(i, screen, color)
+                i += BSpline.param
+            self.__draw_cached_curve(screen, color)
         else:
             print('error: cannot draw the curve with current state', file=stderr)
 
-    def __draw_stored_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
-        for p in self.curve_points:
-            pygame.draw.circle(screen, color, p, 2)
+    def __draw_cached_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
+        pygame.draw.lines(screen, color, False, self.curve_points, 4)
 
-    def __draw_point(self, u: int, screen: pygame.Surface, color: Tuple[int, int, int]):
+    def __calculate_point(self, u: float, screen: pygame.Surface, color: Tuple[int, int, int]):
         coordX = [0.0 for _ in range(self.kOrder + 1)]
         coordY = [0.0 for _ in range(self.kOrder + 1)]
         delta_index: int = self.__find_delta_index(u)
@@ -130,9 +129,8 @@ class BSpline:
         x = int(screen.get_size()[0] * coordX[0])
         y = int(screen.get_size()[1] * coordY[0])
         self.curve_points.append((x, y))
-        pygame.draw.circle(screen, color, (x, y), 2)
 
-    def __find_delta_index(self, u: int):
+    def __find_delta_index(self, u: float) -> int:
         m = self.get_nCP() - 1
         for i in range(m + self.kOrder - 1):
             if u >= self.knotSequence[i] and u < self.knotSequence[i+1]:
