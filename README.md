@@ -24,10 +24,11 @@ Run by doing `$ python3 main.py`.
 The default window resolution is `1280x720`, if you wish to change it, run with the following arguments `$ python3 main.py WIDTH HEIGHT`
 
 Hotkeys:
-- `A` = Decrease the order of the B-Spline.
-- `D` = Increase the order of the B-Spline.
+- `A` = Decrease the degree of the Selected Curve.
+- `D` = Increase the degree of the Selected Curve.
 - `S` = Clears all Control Points.
-- `Left Mouse Button` = Adds a Control Point or Moves the Control Point below mouse position.
+- `Space` = Switches between the two curves.
+- `Left Mouse Button` = Adds a Control Point to the Selected Curve or Moves the Control Point below mouse position.
 - `Right Mouse Button` = Removes the Control Point below the mouse position.
 - `Escape` = Exits program.
 
