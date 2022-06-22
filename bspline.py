@@ -42,6 +42,20 @@ class BSpline:
     def get_nCP(self) -> int:
         return len(self.control_points)
 
+    def try_moving(self, x: int, y: int):
+        for cp in self.control_points:
+            if cp.is_bellow(x, y):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                self.set_moving(cp)
+                break
+
+    def try_removing(self, x: int, y: int):
+        for cp in self.control_points:
+            if cp.is_bellow(x, y):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                self.remove_control_point(cp)
+                break
+
     def set_moving(self, control_point: ControlPoint):
         self.moving_index = self.control_points.index(control_point)
 
@@ -51,7 +65,7 @@ class BSpline:
     def is_moving(self) -> bool:
         return self.moving_index != -1
 
-    def move_control_point(self, coord: Tuple[int, int]):
+    def move_control_point_if_set(self, coord: Tuple[int, int]):
         if self.is_moving():
             if coord != self.control_points[self.moving_index].get_pos():
                 self.changed_state = True
@@ -91,6 +105,7 @@ class BSpline:
         elif self.can_draw():
             self.changed_state = False
             self.__updateKnotVectors()
+            # print(self.knotSequence)
             self.curve_points.clear()
             i = 0.0
             while i <= 1.0:
