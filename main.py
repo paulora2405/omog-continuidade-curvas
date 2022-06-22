@@ -3,6 +3,7 @@ import pygame
 import sys
 from colors import *
 from bspline import BSpline
+from bezier import Bezier
 from typing import Tuple
 
 
@@ -21,7 +22,9 @@ def main():
     fps = 60
     font = pygame.font.Font('freesansbold.ttf', 26)
     bspline = BSpline(degree=6)
+    bezier = Bezier(degree=4)
     run = True
+    fcs = True  # First Curve Selected, for short
 
     while run:
         screen.fill(white)
@@ -30,32 +33,42 @@ def main():
         pygame.display.set_caption(
             f'Curve Continuity - Paulo Albuquerque - {frameRate} FPS')
 
-        run = event_handling(bspline)
+        run, fcs = event_handling(
+            bspline, bezier, fcs)
 
-        bspline.move_control_point(pygame.mouse.get_pos())
+        render_text(f'B-Spline: Degree={bspline.degree} Points={bspline.get_nCP()}',
+                    (screen.get_size()[0] // 4, 14), screen, font, red)
+        render_text(f'Bezier: Degree={bezier.degree} Points={bezier.get_nCP()}',
+                    (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 14), screen, font, blue)
+        render_text(f'{"<-" if fcs else ""} Selected {"->" if not fcs else ""}',
+                    (screen.get_size()[0] // 2, 14), screen, font, red if fcs else blue)
+        render_text('Space key switches', (screen.get_size()
+                    [0] // 2, 40), screen, font, black)
 
-        render_text(f'Degree {bspline.degree}      K Order {bspline.kOrder}      Control points {bspline.get_nCP()}',
-                    (screen.get_size()[0] // 2, 14), screen, font)
-
-        # draws connecting lines firts so they are further back
         bspline.draw_connecting_lines(screen)
+        bezier.draw_connecting_lines(screen)
         if bspline.can_draw():
-            # draws the curve
-            bspline.draw_curve(screen, blue)
+            bspline.draw_curve(screen, red)
         else:
-            # draws text for less cp than order
-            render_text(f'Pick at least {bspline.kOrder - bspline.get_nCP()} more control points!',
-                        (screen.get_size()[0] // 2, 40), screen, font)
-        # draws the control points last so they are at above everything else
+            render_text(f'{bspline.kOrder - bspline.get_nCP()} more points needed!',
+                        (screen.get_size()[0] // 4, 40), screen, font, black)
+        if bezier.can_draw():
+            bezier.draw_curve(screen, blue)
+        else:
+            render_text(f'{bezier.degree - bezier.get_nCP() + 1} more points needed!',
+                        (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 40), screen, font, black)
         bspline.draw_control_points(screen)
+        bezier.draw_control_points(screen)
 
         pygame.display.update()
 
     pygame.quit()
 
 
-def event_handling(bspline: BSpline) -> bool:
+def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected) -> Tuple[bool, bool]:
     run = True
+    fcs = first_curve_selected
+    x, y = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -63,42 +76,48 @@ def event_handling(bspline: BSpline) -> bool:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 run = False
+            elif event.key == pygame.K_SPACE:
+                fcs = not fcs
             elif event.key == pygame.K_d:
-                bspline.inc_order()
+                if fcs:
+                    bspline.inc_order()
+                else:
+                    bezier.inc_degree()
             elif event.key == pygame.K_a:
-                bspline.dec_order()
+                if fcs:
+                    bspline.dec_order()
+                else:
+                    bezier.dec_degree()
             elif event.key == pygame.K_s:
                 bspline.clear_control_points()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             m_left, _, m_right = pygame.mouse.get_pressed()
             if m_left:
-                x, y = pygame.mouse.get_pos()
-                found = False
-                for cp in bspline.control_points:
-                    if cp.is_bellow(x, y):
-                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                        bspline.set_moving(cp)
-                        found = True
-                        break
-                if not found:
-                    bspline.add_control_point(x, y, red)
+                bspline.try_moving(x, y)
+                bezier.try_moving(x, y)
+                if not bspline.is_moving() and not bezier.is_moving():
+                    if fcs:
+                        bspline.add_control_point(x, y, red)
+                    else:
+                        bezier.add_control_point(x, y, blue)
             elif m_right:
-                x, y = pygame.mouse.get_pos()
-                for cp in bspline.control_points:
-                    if cp.is_bellow(x, y):
-                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                        bspline.remove_control_point(cp)
-                        break
+                bspline.try_removing(x, y)
+                bezier.try_removing(x, y)
 
         elif event.type == pygame.MOUSEBUTTONUP:
             bspline.set_not_moving()
+            bezier.set_not_moving()
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-    return run
+
+    bspline.move_control_point_if_set((x, y))
+    bezier.move_control_point_if_set((x, y))
+
+    return run, fcs
 
 
-def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font):
-    textRender = font.render(text, True, black)
+def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int]):
+    textRender = font.render(text, True, color)
     textRect = textRender.get_rect()
     textRect.center = pos
     screen.blit(textRender, textRect)
