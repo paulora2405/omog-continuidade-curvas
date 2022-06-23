@@ -12,7 +12,11 @@ class BSpline:
 
     def __init__(self, kOrder: int = -1, degree: int = -1, control_points: List[ControlPoint] = []):
         if degree == -1 and kOrder == -1:
-            raise ArgumentError('either order or degree is necessary')
+            raise ArgumentError(
+                argument=None, message='either order or degree is necessary')
+        if degree != -1 and kOrder != -1 and degree + 1 != kOrder:
+            raise ArgumentError(
+                argument=None, message='order has to be equal to degree + 1')
         if degree != -1 and degree <= 0:
             raise ValueError('degree has to be bigger than 0')
         if kOrder != -1 and kOrder <= 1:
