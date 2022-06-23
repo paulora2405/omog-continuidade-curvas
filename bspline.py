@@ -15,8 +15,7 @@ class BSpline:
             raise ArgumentError(
                 argument=None, message='either order or degree is necessary')
         if degree != -1 and kOrder != -1 and degree + 1 != kOrder:
-            raise ArgumentError(
-                argument=None, message='order has to be equal to degree + 1')
+            raise ValueError('order has to be equal to degree + 1')
         if degree != -1 and degree <= 0:
             raise ValueError('degree has to be bigger than 0')
         if kOrder != -1 and kOrder <= 1:
