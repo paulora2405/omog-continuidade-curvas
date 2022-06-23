@@ -1,10 +1,10 @@
 # Bezier Grau 4
-from argparse import ArgumentError
-from math import degrees, factorial
+from math import factorial
 from sys import stderr
 import pygame
 from colors import *
 from controlpoint import ControlPoint
+from bspline import BSpline
 from typing import List, Tuple
 
 
@@ -127,3 +127,13 @@ class Bezier:
                 self.control_points[i].y
 
         self.curve_points.append((int(sumX), int(sumY)))
+
+    def continuity_0(self, bspline: BSpline):
+        if self.can_draw() and bspline.can_draw():
+            self.changed_state = True
+            last_cp_bspline = bspline.control_points[-1]
+            first_cp_bezier = self.control_points[0]
+            deltaX = last_cp_bspline.x - first_cp_bezier.x
+            deltaY = last_cp_bspline.y - first_cp_bezier.y
+            for cp in self.control_points:
+                cp.set_pos(cp.x + deltaX, cp.y + deltaY)
