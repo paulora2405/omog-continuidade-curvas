@@ -2,6 +2,7 @@ from argparse import ArgumentError
 import pygame
 import sys
 from colors import *
+from helper import *
 from bspline import BSpline
 from bezier import Bezier
 from typing import Tuple
@@ -49,18 +50,16 @@ def main():
 
         bspline.draw_connecting_lines(screen)
         bezier.draw_connecting_lines(screen)
-        if bspline.can_draw():
-            bspline.draw_curve(screen, red)
+        if fcs:  # draws selected curve above the other
+            bezier.draw_curve(screen, font, blue)
+            bspline.draw_curve(screen, font, red)
+            bezier.draw_control_points(screen)
+            bspline.draw_control_points(screen)
         else:
-            render_text(f'{bspline.kOrder - bspline.get_nCP()} more points needed!',
-                        (screen.get_size()[0] // 4, 40), screen, font, black)
-        if bezier.can_draw():
-            bezier.draw_curve(screen, blue)
-        else:
-            render_text(f'{bezier.degree - bezier.get_nCP() + 1} more points needed!',
-                        (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 40), screen, font, black)
-        bspline.draw_control_points(screen)
-        bezier.draw_control_points(screen)
+            bspline.draw_curve(screen, font, red)
+            bezier.draw_curve(screen, font, blue)
+            bspline.draw_control_points(screen)
+            bezier.draw_control_points(screen)
 
         pygame.display.update()
 
@@ -90,26 +89,37 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected: bool,
                     if continuity == 2:
                         pass
             elif event.key == pygame.K_d:
+                continuity = -1
                 if fcs:
                     bspline.inc_order()
                 else:
                     bezier.inc_degree()
             elif event.key == pygame.K_a:
+                continuity = -1
                 if fcs:
                     bspline.dec_order()
                 else:
                     bezier.dec_degree()
             elif event.key == pygame.K_s:
+                continuity = -1
                 if fcs:
                     bspline.clear_control_points()
                 else:
                     bezier.clear_control_points()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            continuity = -1
             m_left, _, m_right = pygame.mouse.get_pressed()
             if m_left:
-                bspline.try_moving(x, y)
-                bezier.try_moving(x, y)
+                if fcs:
+                    bspline.try_moving(x, y)
+                    if not bspline.is_moving():
+                        bezier.try_moving(x, y)
+                else:
+                    bezier.try_moving(x, y)
+                    if not bezier.is_moving():
+                        bspline.try_moving(x, y)
+
                 if not bspline.is_moving() and not bezier.is_moving():
                     if fcs:
                         bspline.add_control_point(x, y, red)
@@ -128,34 +138,6 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected: bool,
     bezier.move_control_point_if_set((x, y))
 
     return run, fcs, continuity
-
-
-def render_hotkeys(screen: pygame.Surface):
-    font_size = 14
-    font = pygame.font.Font('freesansbold.ttf', font_size)
-    hotkeys = [
-        'Space - Switch Curve',
-        'Mouse Left - Add or move CP',
-        'Mouse Right - Remove CP',
-        'C - Increase Continuity',
-        'S - Clear CPs',
-        'A - Decrease Degree',
-        'D - Increase Degree',
-    ]
-    hotkeys.reverse()
-    for i, hotkey in enumerate(hotkeys):
-        render_text(hotkey, (0, screen.get_size()
-                             [1] - i * font_size), screen, font, black, center=False)
-
-
-def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int], center=True):
-    textRender = font.render(text, True, color)
-    textRect = textRender.get_rect()
-    if center:
-        textRect.center = pos
-    else:
-        textRect.bottomleft = pos
-    screen.blit(textRender, textRect)
 
 
 if __name__ == "__main__":
