@@ -5,6 +5,7 @@ import pygame
 from colors import *
 from controlpoint import ControlPoint
 from typing import List, Tuple
+from helper import render_text
 
 
 class BSpline:
@@ -102,7 +103,7 @@ class BSpline:
         for p in self.control_points:
             p.draw(screen)
 
-    def draw_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
+    def draw_curve(self, screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int]):
         if not self.changed_state:
             self.__draw_cached_curve(screen, color)
         elif self.can_draw():
@@ -116,7 +117,8 @@ class BSpline:
                 i += BSpline.param
             self.__draw_cached_curve(screen, color)
         else:
-            print('error: cannot draw the curve with current state', file=stderr)
+            render_text(f'{self.kOrder - self.get_nCP()} more points needed!',
+                        (screen.get_size()[0] // 4, 40), screen, font, black)
 
     def __draw_cached_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
         pygame.draw.lines(screen, color, False, self.curve_points, 4)

@@ -3,6 +3,7 @@ from math import factorial
 from sys import stderr
 import pygame
 from colors import *
+from helper import render_text
 from controlpoint import ControlPoint
 from bspline import BSpline
 from typing import List, Tuple
@@ -74,7 +75,8 @@ class Bezier:
         if self.get_nCP() == self.degree + 1:
             return
         self.changed_state = True
-        self.control_points.append(ControlPoint(x, y, self.get_nCP(), color))
+        self.control_points.append(ControlPoint(
+            x, y, self.get_nCP(), color, True))
 
     def remove_control_point(self, control_point: ControlPoint):
         self.changed_state = True
@@ -92,9 +94,13 @@ class Bezier:
 
     def draw_control_points(self, screen: pygame.Surface):
         for p in self.control_points:
+            if p.x > screen.get_size()[0]:
+                p.x = screen.get_size()[0] - 10
+            if p.y > screen.get_size()[1]:
+                p.y = screen.get_size()[1] - 10
             p.draw(screen)
 
-    def draw_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
+    def draw_curve(self, screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int]):
         if not self.changed_state:
             self.__draw_cached_curve(screen, color)
         elif self.can_draw():
@@ -106,7 +112,8 @@ class Bezier:
                 i += Bezier.param
             self.__draw_cached_curve(screen, color)
         else:
-            print('error: cannot draw the curve with current state', file=stderr)
+            render_text(f'{self.degree - self.get_nCP() + 1} more points needed!',
+                        (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 40), screen, font, black)
 
     def __draw_cached_curve(self, screen: pygame.Surface, color: Tuple[int, int, int]):
         pygame.draw.lines(screen, color, False, self.curve_points, 4)
