@@ -23,6 +23,7 @@ def main():
     font = pygame.font.Font('freesansbold.ttf', 26)
     bspline = BSpline(degree=6)
     bezier = Bezier(degree=4)
+    continuity = -1
     run = True
     fcs = True  # First Curve Selected, for short
 
@@ -33,8 +34,8 @@ def main():
         pygame.display.set_caption(
             f'Curve Continuity - Paulo Albuquerque - {frameRate} FPS')
 
-        run, fcs = event_handling(
-            bspline, bezier, fcs)
+        run, fcs, continuity = event_handling(
+            bspline, bezier, fcs, continuity)
 
         render_text(f'B-Spline: Degree={bspline.degree} Points={bspline.get_nCP()}',
                     (screen.get_size()[0] // 4, 14), screen, font, red)
@@ -42,6 +43,8 @@ def main():
                     (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 14), screen, font, blue)
         render_text(f'{"<-" if fcs else ""} Selected {"->" if not fcs else ""}',
                     (screen.get_size()[0] // 2, 14), screen, font, red if fcs else blue)
+        render_text(f'{"No " if continuity == -1 else ""}C{0 if continuity == -1 else continuity}',
+                    (screen.get_size()[0] // 2, 40), screen, font, black)
         render_hotkeys(screen)
 
         bspline.draw_connecting_lines(screen)
@@ -64,7 +67,7 @@ def main():
     pygame.quit()
 
 
-def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected) -> Tuple[bool, bool]:
+def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected: bool, continuity: int) -> Tuple[bool, bool]:
     run = True
     fcs = first_curve_selected
     x, y = pygame.mouse.get_pos()
@@ -77,6 +80,15 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected) -> Tu
                 run = False
             elif event.key == pygame.K_SPACE:
                 fcs = not fcs
+            elif event.key == pygame.K_c:
+                if continuity < 2 and bspline.can_draw() and bezier.can_draw():
+                    continuity += 1
+                    if continuity == 0:
+                        bezier.continuity_0(bspline)
+                    if continuity == 1:
+                        pass
+                    if continuity == 2:
+                        pass
             elif event.key == pygame.K_d:
                 if fcs:
                     bspline.inc_order()
@@ -115,7 +127,7 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected) -> Tu
     bspline.move_control_point_if_set((x, y))
     bezier.move_control_point_if_set((x, y))
 
-    return run, fcs
+    return run, fcs, continuity
 
 
 def render_hotkeys(screen: pygame.Surface):
@@ -125,6 +137,7 @@ def render_hotkeys(screen: pygame.Surface):
         'Space - Switch Curve',
         'Mouse Left - Add or move CP',
         'Mouse Right - Remove CP',
+        'C - Increase Continuity',
         'S - Clear CPs',
         'A - Decrease Degree',
         'D - Increase Degree',
