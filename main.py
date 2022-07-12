@@ -85,7 +85,7 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected: bool,
                     if continuity == 0:
                         bezier.continuity_0(bspline)
                     if continuity == 1:
-                        pass
+                        bezier.continuity_1(bspline)
                     if continuity == 2:
                         pass
             elif event.key == pygame.K_d:
