@@ -159,16 +159,6 @@ class Bezier:
 
     def continuity_2(self, bspline: BSpline):
         self.continuity_1(bspline)
-        # pos1 = self.control_points[-1]
-        # pos2 = self.control_points[-2]
-        # x = sympy.symbols('x')
-        # y = sympy.symbols('y')
-
-        # function = (pos1.x * pos1.y) + (x * pos1.y) + (y * pos2.x) - \
-        #     (x * pos2.x) - (y * pos1.x) - (pos2.x * pos2.y)
-        # self.control_points[-3].y = int(sympy.solve(
-        #     function, y)[0].subs(x, self.control_points[-3].x))
-
         deltaX = bspline.control_points[-3].x - bspline.control_points[-2].x
         deltaY = bspline.control_points[-3].y - bspline.control_points[-2].y
         seclast_pos = self.control_points[1].get_pos()
