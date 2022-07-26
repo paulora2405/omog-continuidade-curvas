@@ -31,6 +31,10 @@ Hotkeys:
 - `Left Mouse Button` = Adds a Control Point to the Selected Curve or Moves the Control Point below mouse position.
 - `Right Mouse Button` = Removes the Control Point below the mouse position.
 - `Escape` = Exits program.
+- `C` = Increase Continuity
+- `0` = Continuity C0
+- `1` = Continuity G1
+- `2` = Continuity G2
 
 ## Functions and Classes
 ### ControlPoint Class
