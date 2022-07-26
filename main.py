@@ -44,8 +44,7 @@ def main():
                     (screen.get_size()[0] // 4 + screen.get_size()[0] // 2, 14), screen, font, blue)
         render_text(f'{"<-" if fcs else ""} Selected {"->" if not fcs else ""}',
                     (screen.get_size()[0] // 2, 14), screen, font, red if fcs else blue)
-        render_text(f'{"No " if continuity == -1 else ""}C{0 if continuity == -1 else continuity}',
-                    (screen.get_size()[0] // 2, 40), screen, font, black)
+        render_continuity(continuity, screen, font)
         render_hotkeys(screen)
 
         bspline.draw_connecting_lines(screen)
@@ -87,7 +86,19 @@ def event_handling(bspline: BSpline, bezier: Bezier, first_curve_selected: bool,
                     if continuity == 1:
                         bezier.continuity_1(bspline)
                     if continuity == 2:
-                        pass
+                        bezier.continuity_2(bspline)
+            elif event.key == pygame.K_0:
+                if bspline.can_draw() and bezier.can_draw():
+                    continuity = 0
+                    bezier.continuity_0(bspline)
+            elif event.key == pygame.K_1:
+                if bspline.can_draw() and bezier.can_draw():
+                    continuity = 1
+                    bezier.continuity_1(bspline)
+            elif event.key == pygame.K_2:
+                if bspline.can_draw() and bezier.can_draw():
+                    continuity = 2
+                    bezier.continuity_2(bspline)
             elif event.key == pygame.K_d:
                 continuity = -1
                 if fcs:

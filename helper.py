@@ -14,6 +14,9 @@ def render_hotkeys(screen: pygame.Surface):
         'S - Clear CPs',
         'A - Decrease Degree',
         'D - Increase Degree',
+        '0 - Continuity C0',
+        '1 - Continuity C1',
+        '2 - Continuity C2',
     ]
     hotkeys.reverse()
     for i, hotkey in enumerate(hotkeys):
@@ -22,6 +25,22 @@ def render_hotkeys(screen: pygame.Surface):
 
 
 def render_text(text: str, pos: Tuple[int, int], screen: pygame.Surface, font: pygame.font.Font, color: Tuple[int, int, int], center=True):
+    textRender = font.render(text, True, color)
+    textRect = textRender.get_rect()
+    if center:
+        textRect.center = pos
+    else:
+        textRect.bottomleft = pos
+    screen.blit(textRender, textRect)
+
+
+def render_continuity(continuity: int, screen: pygame.Surface, font: pygame.font.Font, center=True):
+    pos = (screen.get_size()[0] // 2, 40)
+    colors = [green, purple, violet]
+    color = colors[continuity] if continuity != -1 else black
+    geometric = False if continuity == 0 else False
+    text = 'No Continuity' if continuity == - \
+        1 else 'Continuity G' if geometric else 'Continuity C' + str(continuity)
     textRender = font.render(text, True, color)
     textRect = textRender.get_rect()
     if center:

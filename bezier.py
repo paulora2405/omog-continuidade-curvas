@@ -152,4 +152,9 @@ class Bezier:
         deltaX = seclast_cp_bsline.x - first_cp_bezier.x
         deltaY = seclast_cp_bsline.y - first_cp_bezier.y
         self.control_points[1].set_pos(
-            first_cp_bezier.x - deltaX, first_cp_bezier.y - deltaY)
+            first_cp_bezier.x - deltaX,
+            first_cp_bezier.y - deltaY
+        )
+
+    def continuity_2(self, bspline: BSpline):
+        self.continuity_1(bspline)
