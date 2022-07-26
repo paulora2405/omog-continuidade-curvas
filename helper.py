@@ -38,9 +38,9 @@ def render_continuity(continuity: int, screen: pygame.Surface, font: pygame.font
     pos = (screen.get_size()[0] // 2, 40)
     colors = [green, purple, violet]
     color = colors[continuity] if continuity != -1 else black
-    geometric = False if continuity == 0 else False
+    geometric = False if continuity == 0 else True
     text = 'No Continuity' if continuity == - \
-        1 else 'Continuity G' if geometric else 'Continuity C' + str(continuity)
+        1 else 'Continuity G' + str(continuity) if geometric else 'Continuity C' + str(continuity)
     textRender = font.render(text, True, color)
     textRect = textRender.get_rect()
     if center:
