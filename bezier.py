@@ -169,8 +169,8 @@ class Bezier:
         # self.control_points[-3].y = int(sympy.solve(
         #     function, y)[0].subs(x, self.control_points[-3].x))
 
-        deltaX = bspline.control_points[2].x - bspline.control_points[1].x
-        deltaY = bspline.control_points[2].y - bspline.control_points[1].y
-        seclast_pos = self.control_points[-2].get_pos()
-        self.control_points[-3].set_pos(seclast_pos[0] -
-                                        deltaX, seclast_pos[1] - deltaY)
+        deltaX = bspline.control_points[-3].x - bspline.control_points[-2].x
+        deltaY = bspline.control_points[-3].y - bspline.control_points[-2].y
+        seclast_pos = self.control_points[1].get_pos()
+        self.control_points[2].set_pos(seclast_pos[0] -
+                                       deltaX, seclast_pos[1] - deltaY)
